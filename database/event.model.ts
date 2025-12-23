@@ -109,25 +109,21 @@ const EventSchema = new Schema<IEvent>(
   }
 );
 
-EventSchema.pre('save', function (next) {
-  const event = this as IEvent;
-
-  // generate slug only if title changed or document is new
-  if (event.isModified('title') || event.isNew) {
-    event.slug = generateSlug(event.title);
+EventSchema.pre<IEvent>('save', async function() {
+  // 'this' refers to the document
+  if (this.isModified('title') || this.isNew) {
+    this.slug = generateSlug(this.title);
   }
 
-  // normalize date to ISO format 
-  if (event.isModified('date')) {
-    event.date = normalizeDate(event.date);
+  if (this.isModified('date')) {
+    this.date = normalizeDate(this.date);
   }
 
-  // normalize time format
-  if (event.isModified('time')) {
-    event.time = normalizeTime(event.time);
+  if (this.isModified('time')) {
+    this.time = normalizeTime(this.time);
   }
-
-  next();
+  
+  // No need for next() when using an async function that returns a promise
 });
 
 const generateSlug = (title: string): string => {
